@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BooksHubWeb.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230709153418_addCategoryToDb")]
-    partial class addCategoryToDb
+    [Migration("20230710032320_addCategorytoDb")]
+    partial class addCategorytoDb
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
