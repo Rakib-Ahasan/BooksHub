@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace BooksHubWeb.Migrations
 {
     /// <inheritdoc />
-    public partial class addCategorytoDb : Migration
+    public partial class addCategoryToDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
