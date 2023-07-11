@@ -1,4 +1,5 @@
-﻿using BooksHubWeb.Models;
+﻿using BooksHub.Models;
+using BooksHubWeb.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace BooksHubWeb.Data
@@ -11,5 +12,6 @@ namespace BooksHubWeb.Data
         }
 
         public DbSet<Category> Categories { get; set; }
+        public DbSet<CoverType> CoverTypes { get; set; }
     }
 }
