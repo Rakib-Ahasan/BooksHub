@@ -1,4 +1,5 @@
-﻿using BooksHubWeb.Data;
+﻿using BooksHub.DataAccess.Repository.IRepository;
+using BooksHubWeb.Data;
 using BooksHubWeb.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,15 +7,15 @@ namespace BooksHubWeb.Controllers
 {
     public class CategoryController : Controller
     {
-        private readonly ApplicationDbContext _db;
+        private readonly ICategoryRepository _db;
 
-        public CategoryController(ApplicationDbContext db)
+        public CategoryController(ICategoryRepository db)
         {
             _db = db;
         }
         public IActionResult Index()
         {
-            IEnumerable<Category> categoryObj = _db.Categories;
+            IEnumerable<Category> categoryObj = _db.GetAll();
             return View(categoryObj);
         }
 
@@ -37,8 +38,8 @@ namespace BooksHubWeb.Controllers
             }
             if (ModelState.IsValid) 
             {
-                _db.Categories.Add(obj);
-                _db.SaveChanges();
+                _db.Add(obj);
+                _db.Save();
                 TempData["success"] = "Category created successfully.";
                 return RedirectToAction("Index");
             }
@@ -53,7 +54,7 @@ namespace BooksHubWeb.Controllers
                 return NotFound();
             }
 
-            var objFormDb = _db.Categories.Find(id);
+            var objFormDb = _db.GetFirstOrDefault(u=>u.Id == id);
             if(objFormDb == null )
             {
                 return NotFound();
@@ -74,8 +75,8 @@ namespace BooksHubWeb.Controllers
             }
             if (ModelState.IsValid)
             {
-                _db.Categories.Update(obj);
-                _db.SaveChanges();
+                _db.Update(obj);
+                _db.Save();
                 TempData["success"] = "Category updated successfully.";
                 return RedirectToAction("Index");
             }
@@ -90,7 +91,7 @@ namespace BooksHubWeb.Controllers
                 return NotFound();
             }
 
-            var objFormDb = _db.Categories.Find(id);
+            var objFormDb = _db.GetFirstOrDefault(u=>u.Id == id);
             if (objFormDb == null)
             {
                 return NotFound();
@@ -104,13 +105,13 @@ namespace BooksHubWeb.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult DeletePOST(int id)
         {
-            var obj = _db.Categories.Find(id);
-            if(obj == null)
+            var obj = _db.GetFirstOrDefault(u => u.Id == id);
+            if (obj == null)
             {
                 return NotFound();
             }
-            _db.Categories.Remove(obj);
-            _db.SaveChanges();
+            _db.Remove(obj);
+            _db.Save();
             TempData["success"] = "Category deleted successfully.";
             return RedirectToAction("Index");
         }
