@@ -26,77 +26,91 @@ namespace BooksHubWeb.Areas.Admin.Controllers
         }
 
 
-        //Get
-        public IActionResult Upsert(int? id)
-        {
-            ProductViewModel productViewModel = new()
-            {
-                Product = new(),
-                CategoryList = _unitOfWork.Category.GetAll().Select(i => new SelectListItem {
+		//Get
+		//GET
+		public IActionResult Upsert(int? id)
+		{
+			ProductViewModel productVM = new()
+			{
+				Product = new(),
+				CategoryList = _unitOfWork.Category.GetAll().Select(i => new SelectListItem
+				{
+					Text = i.Name,
+					Value = i.Id.ToString()
+				}),
+				CoverTypeList = _unitOfWork.CoverType.GetAll().Select(i => new SelectListItem
+				{
+					Text = i.Name,
+					Value = i.Id.ToString()
+				}),
+			};
 
-                    Text = i.Name,
-                    Value = i.Id.ToString(),
-                }),
-                CoverTypeList = _unitOfWork.CoverType.GetAll().Select(i => new SelectListItem
-                {
+			if (id == null || id == 0)
+			{
+				//create product
+				//ViewBag.CategoryList = CategoryList;
+				//ViewData["CoverTypeList"] = CoverTypeList;
+				return View(productVM);
+			}
+			else
+			{
+				//update product 
+				productVM.Product = _unitOfWork.Product.GetFirstOrDefault(u => u.Id == id);
+				return View(productVM);
+			}
 
-                    Text = i.Name,
-                    Value = i.Id.ToString(),
-                })
-            };
-            
-            if (id == null || id == 0)
-            {
-                //Create Product
 
-                //ViewBag.CoverTypeList = CategoryList;
-                //ViewData["CoverTypeList"] = CoverTypeList;
-                return View(productViewModel);
-            }
-            else
-            {
-                //Update Product
-            }
+		}
 
-            
-            return View(productViewModel);
-        }
+		//POST
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public IActionResult Upsert(ProductViewModel obj, IFormFile file)
+		{
 
-        //Post
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Upsert(ProductViewModel product, IFormFile file)
-        {
-            //if (obj.Name == obj.Name.ToString())
-            //{
-            //    //ModelState.AddModelError("CustomError", "Display Order Should Not Be The Exact Name");
-            //    ModelState.AddModelError("Name", "Display Order Should Not Be The Exact Name");
-            //}
-            if (ModelState.IsValid)
-            {
-                string wwwRootPath = _webHostEnvironment.WebRootPath;
-                if(file != null) 
-                {
-                    string fileName = Guid.NewGuid().ToString();
-                    var upload = Path.Combine(wwwRootPath, @"images\products");
-                    var extensions = Path.GetExtension(file.FileName);
+			if (ModelState.IsValid)
+			{
+				string wwwRootPath = _webHostEnvironment.WebRootPath;
+				if (file != null)
+				{
+					string fileName = Guid.NewGuid().ToString();
+					var uploads = Path.Combine(wwwRootPath, @"images\products");
+					var extension = Path.GetExtension(file.FileName);
 
-                    using(var fileStream = new FileStream(Path.Combine(upload,fileName + extensions),FileMode.Create)) 
-                    {
-                        file.CopyTo(fileStream);
-                    }
-                    product.Product.ImageUrl = @"images\products" + fileName + extensions;
-                }
-                _unitOfWork.Product.Add(product.Product);
-                _unitOfWork.Save();
-                TempData["success"] = "Product created successfully.";
-                return RedirectToAction("Index");
-            }
-            return View();
-        }
+					if (obj.Product.ImageUrl != null)
+					{
+						var oldImagePath = Path.Combine(wwwRootPath, obj.Product.ImageUrl.TrimStart('\\'));
+						if (System.IO.File.Exists(oldImagePath))
+						{
+							System.IO.File.Delete(oldImagePath);
+						}
+					}
+					using (var fileStreams = new FileStream(Path.Combine(uploads, fileName + extension), FileMode.Create))
+					{
+						file.CopyTo(fileStreams);
+					}
 
-        //Get
-        public IActionResult Delete(int? id)
+					obj.Product.ImageUrl = @"\images\products\" + fileName + extension;
+				}
+
+				if (obj.Product.Id == 0)
+				{
+					_unitOfWork.Product.Add(obj.Product);
+				}
+				else
+				{
+					_unitOfWork.Product.Update(obj.Product);
+				}
+
+				_unitOfWork.Save();
+				TempData["success"] = "Product created successfully";
+				return RedirectToAction("Index");
+			}
+			return View(obj);
+		}
+
+		//Get
+		public IActionResult Delete(int? id)
         {
             if (id == null || id == 0)
             {
